@@ -16,3 +16,14 @@ Meanwhile, the compiled output files will be generated in the `bin` folder by de
 ## Dependency Management
 
 The `JAVA PROJECTS` view allows you to manage your dependencies. More details can be found [here](https://github.com/microsoft/vscode-java-dependency#manage-dependencies).
+
+
+
+# TODO
+bib 52 = buildDiff 
+jahrer hat die auf 3 große Typen aufgeteilt
+- think of types to combine the resulting metrics
+
+- probably split up into categories same es mentioned in paper
+- download suplementary material & look if there are similarities in names of the subcategories 
+- schauen wie berni des gelöst hast 
