@@ -17,11 +17,9 @@ import at.aau.diff.maven.MavenBuildFileDiffer;
 public class App {
 
     static Map<String, Integer> changes_5_categories = new HashMap<>();
-    static List<String> all_changes_as_rows_in_5_categories = new ArrayList<String>();
+    static List<String> features = new ArrayList<String>();
 
     public static List<Change> getChangesOfPomFile(File current_pom, File previous_pom){
-        System.out.println(current_pom.getName());
-
         Differ buildDiffer = new MavenBuildFileDiffer();
 		
 		List<Change> actualChanges = null;
@@ -34,7 +32,6 @@ public class App {
         return actualChanges;
         }
     
-    // TODO change such that it's done for all changes; not just for One pom file's changes
     public static void writeMetricsToCSV(List<String> changes_and_build_result){
         // every key is a column; every rowm is a new set of changes of another pom file
         String header = "";
@@ -82,33 +79,30 @@ public class App {
     }
 
     private static void calculateCategoryValues(List<Change> changes){   
-        // TODO: think of what to do with changes as part of dataprep
         for (Change change : changes) {
             String name = ((MavenBuildChange)change).getName();
-            System.out.println("Change of type:" + name);
-            // count similar changes to get metrics for model 
-           // if (name.startsWith("GENERAL_")){
-            //}
+            System.out.println("Change of type: " + name);
+
             if (name.matches("(GENERAL_|LICENSE_|MODULE_|PARENT_|PROFILE_|PROJECT_|SCM_).*")){
-                System.out.println("FOUND GENERAL CHANGE");
+                //System.out.println("FOUND GENERAL CHANGE");
                 incremetDictValue("GeneralChange");
-                System.out.println(changes_5_categories);
+                //System.out.println(changes_5_categories);
             }
             else if (name.matches("(PLUGIN_DEPENDENCY_|MANAGED_|DEPENDENCY_).*")){
-                System.out.println("FOUND DEPENDENCY CHANGE");
+                //System.out.println("FOUND DEPENDENCY CHANGE");
                 incremetDictValue("DependencyChange");
-                System.out.println(changes_5_categories);
+                //System.out.println(changes_5_categories);
             }
             else if (name.matches("(PLUGIN_REPOSITORY_|REPOSITORY_|DIST_).*")){
-                System.out.println("FOUND REPOSITORY CHANGE");
+                //System.out.println("FOUND REPOSITORY CHANGE");
                 incremetDictValue("RepositoryChange");
-                System.out.println(changes_5_categories);
+                //System.out.println(changes_5_categories);
             }
             // before we catch specifiy Plugin_xxx, now we catch the rest without the need to specify :D 
             else if (name.matches("(RESOURCE_|PLUGIN_|TEST_|SOURCE_).*")){
-                System.out.println("FOUND BUILD CHANGE");
+                //System.out.println("FOUND BUILD CHANGE");
                 incremetDictValue("BuildChange");
-                System.out.println(changes_5_categories);
+                //System.out.println(changes_5_categories);
             }
             else if (name.matches("(CONTRIBUTOR_|DEVELOPER_).*")){
                 System.out.println("FOUND TEAM CHANGE");
@@ -122,23 +116,21 @@ public class App {
     }
 
     public static void main(String[] args) throws Exception {
-        String localDir = System.getProperty("user.dir");
-        System.out.println("************"+localDir);
-        String PATH_PREFIX = "/Users/Rina/Desktop/StudiAssistent/Projekt_Bewerbung/dataprep/pom_files/";
-        //String PATH_PREFIX=new File("").getAbsolutePath()+"/";
+        String PATH_PREFIX_DATA = "/Users/Rina/Desktop/StudiAssistent/Projekt_Bewerbung/data/pom_files/";
 
         // Invoke when receiving error; same in original build differ repo
         //new File("poms/tmp").mkdirs();     
     
-        
         for(int i = 0; i < 100; i++){
-            File current_pom = new File(PATH_PREFIX+"/"+i+"/pom_current.xml");
-            File previous_pom = new File(PATH_PREFIX+"/"+i+"/pom_previous.xml");
-           // File build_result_csv = new File(PATH_PREFIX+"/"+i+"/build_result.csv");
-           // String build_results = "errored"; // TODO get from csv file or save when cloning also into dirctory 
+            
+            File current_pom = new File(PATH_PREFIX_DATA+"/"+i+"/pom_current.xml");
+            if (!current_pom.exists()){
+                continue;  // needed as not all pom files could be loaded 
+            }
+            File previous_pom = new File(PATH_PREFIX_DATA+"/"+i+"/pom_previous.xml");
+            String build_result = Files.toString(new File(PATH_PREFIX_DATA+"/"+i+"/build_result.csv"), Charsets.UTF_8);
             
             List<Change> actualChanges = getChangesOfPomFile(current_pom, previous_pom);
-            System.out.println(actualChanges.size());
 
             resetDict();
             calculateCategoryValues(actualChanges);
@@ -147,19 +139,16 @@ public class App {
             String row_values = changes_5_categories.values().toString(); 
             String row = (row_values.substring(1, row_values.length()-1)).replaceAll(" ", "");
             System.out.println(row);
-            String build_result = Files.toString(new File(PATH_PREFIX+"/"+i+"/build_result.csv"), Charsets.UTF_8);
-            System.out.println("***********"+build_result);
-            //String build_result = "errored"; // TODO get from csv file or save when cloning also into dirctory   
             row = row + ","+build_result;
-            all_changes_as_rows_in_5_categories.add(row);
+            features.add(row);
 
-            // TODO do for all pom files 
-            if (i > 0){
-                break;
-            }
+            // TODO remove to do for all pom files 
+            //if (i > 2){
+            //    break;
+            //}
         }
     
-        writeMetricsToCSV(all_changes_as_rows_in_5_categories);
+        writeMetricsToCSV(features);
          
     }
 }
